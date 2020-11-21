@@ -550,6 +550,8 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         }
         else {  /* single-char tokens ('+', '*', '%', '{', '}', ...) */
           int c = ls->current;
+          if (c == ':')
+            if (check_next1(ls, ':')) return TK_DBCOLON;
           next(ls);
           return c;
         }

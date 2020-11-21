@@ -154,6 +154,7 @@ typedef struct FuncState {
   int nabslineinfo;  /* number of elements in 'abslineinfo' */
   int firstlocal;  /* index of first local var (in Dyndata array) */
   int firstlabel;  /* index of first label (in 'dyd->label->arr') */
+  TString *lastlooplabel;
   short ndebugvars;  /* number of elements in 'f->locvars' */
   lu_byte nactvar;  /* number of active local variables */
   lu_byte nups;  /* number of upvalues */
