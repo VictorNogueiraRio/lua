@@ -20,6 +20,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+#include "lq.h"
 
 
 #undef PI
@@ -40,6 +41,14 @@ static int math_abs (lua_State *L) {
 static int math_sin (lua_State *L) {
   lua_pushnumber(L, l_mathop(sin)(luaL_checknumber(L, 1)));
   return 1;
+}
+
+luaQ_newfunction(qsin) {
+  lua_Number n;
+  luaQ_init();
+
+  luaQ_checknumber(n);
+  luaQ_returnnumber(l_mathop(sin)(n));
 }
 
 static int math_cos (lua_State *L) {
@@ -757,6 +766,8 @@ LUAMOD_API int luaopen_math (lua_State *L) {
   lua_setfield(L, -2, "maxinteger");
   lua_pushinteger(L, LUA_MININTEGER);
   lua_setfield(L, -2, "mininteger");
+  lua_pushqcfunction(L, qsin);
+  lua_setfield(L, -2, "qsin");
   setrandfunc(L);
   return 1;
 }

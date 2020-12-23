@@ -41,7 +41,8 @@
 /* add variant bits to a type */
 #define makevariant(t,v)	((t) | ((v) << 4))
 
-
+union StackValue;
+typedef int (*lua_qCFunction) (union StackValue *func);
 
 /*
 ** Union of all Lua values
@@ -50,6 +51,7 @@ typedef union Value {
   struct GCObject *gc;    /* collectable objects */
   void *p;         /* light userdata */
   lua_CFunction f; /* light C functions */
+  lua_qCFunction qf; /* quick C functions */
   lua_Integer i;   /* integer numbers */
   lua_Number n;    /* float numbers */
 } Value;
@@ -568,12 +570,14 @@ typedef struct Proto {
 #define LUA_VLCL	makevariant(LUA_TFUNCTION, 0)  /* Lua closure */
 #define LUA_VLCF	makevariant(LUA_TFUNCTION, 1)  /* light C function */
 #define LUA_VCCL	makevariant(LUA_TFUNCTION, 2)  /* C closure */
+#define LUA_VQCF	makevariant(LUA_TFUNCTION, 3) /* quick C function */
 
 #define ttisfunction(o)		checktype(o, LUA_TFUNCTION)
 #define ttisclosure(o)		((rawtt(o) & 0x1F) == LUA_VLCL)
 #define ttisLclosure(o)		checktag((o), ctb(LUA_VLCL))
 #define ttislcf(o)		checktag((o), LUA_VLCF)
 #define ttisCclosure(o)		checktag((o), ctb(LUA_VCCL))
+#define ttisqcf(o)    checktag((o), LUA_VQCF)
 
 #define isLfunction(o)	ttisLclosure(o)
 
@@ -581,6 +585,7 @@ typedef struct Proto {
 #define clLvalue(o)	check_exp(ttisLclosure(o), gco2lcl(val_(o).gc))
 #define fvalue(o)	check_exp(ttislcf(o), val_(o).f)
 #define clCvalue(o)	check_exp(ttisCclosure(o), gco2ccl(val_(o).gc))
+#define qfvalue(o) check_exp(ttisqcf(o), val_(o).qf)
 
 #define fvalueraw(v)	((v).f)
 
@@ -593,6 +598,8 @@ typedef struct Proto {
 
 #define setfvalue(obj,x) \
   { TValue *io=(obj); val_(io).f=(x); settt_(io, LUA_VLCF); }
+#define setqfvalue(obj,x) \
+  { TValue *io=(obj); val_(io).qf=(x); settt_(io, LUA_VQCF); }
 
 #define setclCvalue(L,obj,x) \
   { TValue *io = (obj); CClosure *x_ = (x); \

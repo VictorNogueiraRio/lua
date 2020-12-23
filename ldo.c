@@ -480,10 +480,27 @@ CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
   lua_CFunction f;
  retry:
   switch (ttypetag(s2v(func))) {
+    case LUA_VQCF: { /* Quick C function */
+      int err;
+      lua_qCFunction qf;
+      qf = qfvalue(s2v(func));
+      setnilvalue(s2v((L->top)++));
+      err = (*qf)(func);
+      if (err) {
+        setivalue(s2v((L->top)++), err);
+        goto StartCfunc;
+      }
+      L->top = func + 1;
+      while (--nresults > 0)  /* complete missing results */
+        setnilvalue(s2v(L->top++));
+
+      return NULL;
+    }
     case LUA_VCCL:  /* C closure */
       f = clCvalue(s2v(func))->f;
       goto Cfunc;
     case LUA_VLCF:  /* light C function */
+     StartCfunc:
       f = fvalue(s2v(func));
      Cfunc: {
       int n;  /* number of returns */

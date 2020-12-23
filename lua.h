@@ -105,6 +105,8 @@ typedef LUA_KCONTEXT lua_KContext;
 */
 typedef int (*lua_CFunction) (lua_State *L);
 
+//typedef int (*lua_qCFunction) (void *func);
+
 /*
 ** Type for continuation functions
 */
